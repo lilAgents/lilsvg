@@ -303,6 +303,13 @@
   function setBg(val) {
     currentBg = val;
     root.querySelectorAll('.bg-chip').forEach((b) => b.classList.toggle('active', b.dataset.bg === val));
+    // Highlight the custom picker whenever the active background isn't a preset.
+    const cust = root.querySelector('#bg-custom');
+    if (cust) {
+      const isCustom = !['transparent', '#ffffff', '#000000'].includes(String(val).toLowerCase());
+      cust.style.borderColor = isCustom ? 'var(--color-primary)' : '';
+      if (isCustom) cust.value = val;
+    }
     if (val === 'transparent') { previewWrap.classList.add('checkerboard'); previewWrap.style.background = ''; }
     else { previewWrap.classList.remove('checkerboard'); previewWrap.style.background = val; }
   }
@@ -335,7 +342,11 @@
   });
 
   root.querySelectorAll('.bg-chip').forEach((b) => b.addEventListener('click', () => setBg(b.dataset.bg)));
-  $('#bg-custom').addEventListener('input', (e) => setBg(e.target.value));
+  // Some browsers only fire 'change' (not 'input') when the native color picker
+  // closes, so listen for both, otherwise a picked custom background never applies.
+  const onCustomBg = (e) => setBg(e.target.value);
+  $('#bg-custom').addEventListener('input', onCustomBg);
+  $('#bg-custom').addEventListener('change', onCustomBg);
 
   $('#export-scale').addEventListener('change', (e) => {
     $('#export-width').classList.toggle('hidden', e.target.value !== 'custom');
