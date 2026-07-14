@@ -55,10 +55,11 @@ import Layout from '../layouts/Layout.astro';
                   <button type="button" data-bg="transparent" class="bg-chip active">Transparent</button>
                   <button type="button" data-bg="#ffffff" class="bg-chip">White</button>
                   <button type="button" data-bg="#000000" class="bg-chip">Black</button>
-                  <label class="inline-flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                  <button type="button" id="bg-custom-btn" class="bg-chip inline-flex items-center gap-1.5">
+                    <span id="bg-custom-swatch" class="inline-block h-3.5 w-3.5 rounded-sm border border-black/10" style="background:#536ee5"></span>
                     Custom
-                    <input type="color" id="bg-custom" value="#536ee5" class="color-input">
-                  </label>
+                  </button>
+                  <input type="color" id="bg-custom" value="#536ee5" class="hidden" aria-label="Custom background color" />
                 </div>
               </div>
             </div>

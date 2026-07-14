@@ -302,13 +302,16 @@
   // ---- background ----
   function setBg(val) {
     currentBg = val;
-    root.querySelectorAll('.bg-chip').forEach((b) => b.classList.toggle('active', b.dataset.bg === val));
-    // Highlight the custom picker whenever the active background isn't a preset.
-    const cust = root.querySelector('#bg-custom');
-    if (cust) {
-      const isCustom = !['transparent', '#ffffff', '#000000'].includes(String(val).toLowerCase());
-      cust.style.borderColor = isCustom ? 'var(--color-primary)' : '';
-      if (isCustom) cust.value = val;
+    const isCustom = !['transparent', '#ffffff', '#000000'].includes(String(val).toLowerCase());
+    root.querySelectorAll('.bg-chip[data-bg]').forEach((b) => b.classList.toggle('active', b.dataset.bg === val));
+    // The Custom chip is active for any non-preset color; its swatch shows it.
+    const cbtn = root.querySelector('#bg-custom-btn');
+    const cinput = root.querySelector('#bg-custom');
+    const cswatch = root.querySelector('#bg-custom-swatch');
+    if (cbtn) cbtn.classList.toggle('active', isCustom);
+    if (isCustom) {
+      if (cinput) cinput.value = val;
+      if (cswatch) cswatch.style.background = val;
     }
     if (val === 'transparent') { previewWrap.classList.add('checkerboard'); previewWrap.style.background = ''; }
     else { previewWrap.classList.remove('checkerboard'); previewWrap.style.background = val; }
@@ -341,7 +344,9 @@
     process(true);
   });
 
-  root.querySelectorAll('.bg-chip').forEach((b) => b.addEventListener('click', () => setBg(b.dataset.bg)));
+  root.querySelectorAll('.bg-chip[data-bg]').forEach((b) => b.addEventListener('click', () => setBg(b.dataset.bg)));
+  // The "Custom" chip opens the hidden native color picker.
+  $('#bg-custom-btn').addEventListener('click', () => $('#bg-custom').click());
   // Some browsers only fire 'change' (not 'input') when the native color picker
   // closes, so listen for both, otherwise a picked custom background never applies.
   const onCustomBg = (e) => setBg(e.target.value);
