@@ -173,11 +173,17 @@
 
   // ---- render ----
   function intrinsicSize(svg) {
-    const pw = parseFloat(svg.getAttribute('width'));
-    const ph = parseFloat(svg.getAttribute('height'));
-    if (pw > 0 && ph > 0) return { w: pw, h: ph };
+    // Prefer the LARGER of the attribute size and the viewBox size as the raster
+    // base. Icon sets ship as width="16" with a 512 viewBox; exporting at 16px
+    // would be microscopic, and the viewBox is the real design resolution.
+    const aw = parseFloat(svg.getAttribute('width'));
+    const ah = parseFloat(svg.getAttribute('height'));
     const vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
-    if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) return { w: vb[2], h: vb[3] };
+    const hasA = aw > 0 && ah > 0;
+    const hasV = vb.length === 4 && vb[2] > 0 && vb[3] > 0;
+    if (hasA && hasV) return aw * ah >= vb[2] * vb[3] ? { w: aw, h: ah } : { w: vb[2], h: vb[3] };
+    if (hasA) return { w: aw, h: ah };
+    if (hasV) return { w: vb[2], h: vb[3] };
     return { w: 300, h: 300 };
   }
   function updateDims(svg) {
@@ -196,9 +202,19 @@
   function rerender() {
     if (!srcSvg) return;
     const out = buildOut();
+    updateDims(out);
+    // The preview copy scales to FIT the box, up or down: guarantee a viewBox
+    // (tiny icons ship as width="16" and would render as an invisible speck),
+    // then drop the fixed size so CSS can letterbox it. Exports are untouched.
+    if (!out.getAttribute('viewBox')) {
+      const w = parseFloat(out.getAttribute('width'));
+      const h = parseFloat(out.getAttribute('height'));
+      if (w > 0 && h > 0) out.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    }
+    out.removeAttribute('width');
+    out.removeAttribute('height');
     preview.innerHTML = '';
     preview.appendChild(document.importNode(out, true));
-    updateDims(out);
   }
 
   function process(force) {
